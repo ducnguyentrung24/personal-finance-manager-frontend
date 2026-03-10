@@ -21,7 +21,9 @@ function Transactions() {
       const res = await transactionAPI.getAll()
 
       const data =
-        Array.isArray(res)
+        Array.isArray(res?.data?.transactions)
+          ? res.data.transactions
+          : Array.isArray(res)
           ? res
           : Array.isArray(res?.data)
           ? res.data
@@ -48,11 +50,11 @@ function Transactions() {
 
   const filteredTransactions = (transactions || [])
     .filter((t) =>
-      t.title?.toLowerCase().includes(search.toLowerCase())
+      (t.note || "").toLowerCase().includes(search.toLowerCase())
     )
     .filter((t) => {
       if (filter === "all") return true
-      return t.type === filter
+      return t.categoryId?.type === filter
     })
 
   return (
