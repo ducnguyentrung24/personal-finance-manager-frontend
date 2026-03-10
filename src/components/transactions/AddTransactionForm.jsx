@@ -1,0 +1,121 @@
+import { useState } from "react"
+import { ChevronDown } from "lucide-react"
+
+function AddTransactionForm({ onClose }) {
+
+  const today = new Date().toISOString().split("T")[0]
+
+  const [form, setForm] = useState({
+    title: "",
+    amount: "",
+    type: "expense",
+    category: "",
+    date: today
+  })
+
+  const categories = [
+    { id: 1, name: "Ăn uống" },
+    { id: 2, name: "Lương" },
+    { id: 3, name: "Giải trí" },
+    { id: 4, name: "Học tập" }
+  ]
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log("Transaction:", form)
+    onClose()
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* TITLE */}
+      <input
+        type="text"
+        name="title"
+        placeholder="Tiêu đề"
+        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={form.title}
+        onChange={handleChange}
+      />
+
+      {/* AMOUNT */}
+      <input
+        type="number"
+        name="amount"
+        placeholder="Số tiền"
+        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={form.amount}
+        onChange={handleChange}
+      />
+
+      {/* TYPE */}
+      <div className="relative">
+        <select
+          name="type"
+          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={form.type}
+          onChange={handleChange}
+        >
+          <option value="expense">Chi tiêu</option>
+          <option value="income">Thu nhập</option>
+        </select>
+
+        <ChevronDown
+          size={18}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+        />
+      </div>
+
+      {/* CATEGORY */}
+      <div className="relative">
+        <select
+          name="category"
+          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={form.category}
+          onChange={handleChange}
+        >
+          <option value="">Chọn danh mục</option>
+
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.name}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown
+          size={18}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+        />
+      </div>
+
+      {/* DATE */}
+      <input
+        type="date"
+        name="date"
+        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={form.date}
+        onChange={handleChange}
+      />
+
+      {/* BUTTON */}
+      <button
+        type="submit"
+        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+      >
+        Thêm giao dịch
+      </button>
+
+    </form>
+  )
+}
+
+export default AddTransactionForm
