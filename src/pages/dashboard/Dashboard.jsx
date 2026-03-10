@@ -15,7 +15,7 @@ function Dashboard() {
   })
 
   const formatMoney = (value) => {
-    return value.toLocaleString("vi-VN") + " ₫"
+    return Number(value || 0).toLocaleString("vi-VN") + " ₫"
   }
 
   useEffect(() => {
@@ -26,7 +26,14 @@ function Dashboard() {
 
         const res = await reportAPI.getDashboard()
 
-        setStats(res.data)
+        const data = res.data || res
+
+        setStats({
+          totalBalance: data.totalBalance || 0,
+          totalIncome: data.totalIncome || 0,
+          totalExpense: data.totalExpense || 0,
+          savings: data.savings || 0
+        })
 
       } catch (error) {
 
@@ -46,6 +53,8 @@ function Dashboard() {
       <h1 className="text-2xl font-bold">
         Dashboard
       </h1>
+
+      {/* STAT CARDS */}
 
       <div className="grid grid-cols-4 gap-6">
 
@@ -74,6 +83,8 @@ function Dashboard() {
         />
 
       </div>
+
+      {/* CHART */}
 
       <IncomeExpenseChart />
 
