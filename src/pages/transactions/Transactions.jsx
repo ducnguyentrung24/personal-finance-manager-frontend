@@ -19,11 +19,22 @@ function Transactions() {
 
       const res = await transactionAPI.getAll()
 
-      setTransactions(res.data)
+      // xử lý mọi dạng response
+      const data =
+        Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.data?.data)
+          ? res.data.data
+          : []
+
+      setTransactions(data)
 
     } catch (error) {
 
       console.error("Fetch transactions error:", error)
+      setTransactions([])
 
     }
 
@@ -35,9 +46,9 @@ function Transactions() {
 
   }, [])
 
-  const filteredTransactions = transactions
+  const filteredTransactions = (transactions || [])
     .filter((t) =>
-      t.title.toLowerCase().includes(search.toLowerCase())
+      t.title?.toLowerCase().includes(search.toLowerCase())
     )
     .filter((t) => {
       if (filter === "all") return true
