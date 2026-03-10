@@ -36,7 +36,14 @@ function AppRoutes() {
 
           <Route path="reports" element={<Reports />} />
 
-          <Route path="users" element={<Users />} />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Users />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="profile" element={<Profile />} />
 
