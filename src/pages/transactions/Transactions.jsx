@@ -10,6 +10,7 @@ function Transactions() {
 
   const [open, setOpen] = useState(false)
   const [transactions, setTransactions] = useState([])
+  const [search, setSearch] = useState("")
 
   const fetchTransactions = async () => {
 
@@ -21,7 +22,7 @@ function Transactions() {
 
     } catch (error) {
 
-      console.error("Fetch transactions error:", error)
+      console.error(error)
 
     }
 
@@ -32,6 +33,10 @@ function Transactions() {
     fetchTransactions()
 
   }, [])
+
+  const filteredTransactions = transactions.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="space-y-6">
@@ -51,8 +56,16 @@ function Transactions() {
 
       </div>
 
+      <input
+        type="text"
+        placeholder="Tìm giao dịch..."
+        className="border rounded-lg px-3 py-2 w-100"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
       <TransactionTable
-        transactions={transactions}
+        transactions={filteredTransactions}
         setTransactions={setTransactions}
       />
 
