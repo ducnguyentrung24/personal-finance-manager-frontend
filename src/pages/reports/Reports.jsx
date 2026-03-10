@@ -22,7 +22,9 @@ function Reports() {
   })
 
   const [monthly, setMonthly] = useState([])
+  const [topExpenseCategories, setTopExpenseCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   const formatMoney = (value) => {
     return Number(value || 0).toLocaleString("vi-VN") + " ₫"
@@ -50,11 +52,16 @@ function Reports() {
 
         setMonthly(Array.isArray(monthlyData) ? monthlyData : [])
 
+        const topRes = await reportAPI.getTopExpenseCategories()
+        const topData = topRes?.data?.data || topRes?.data || []
+        setTopExpenseCategories(Array.isArray(topData) ? topData : [])
+
       } catch (error) {
 
         console.error("Fetch reports error:", error)
         setDashboard({ totalIncome: 0, totalExpense: 0, balance: 0 })
         setMonthly([])
+        setTopExpenseCategories([])
 
       } finally {
 
@@ -92,12 +99,59 @@ function Reports() {
 
   }, [monthly])
 
+  const topExpenseTotal = useMemo(() => {
+    return topExpenseCategories.reduce(
+      (sum, item) => sum + Number(item.total || 0),
+      0
+    )
+  }, [topExpenseCategories])
+
+  const handleExportExcel = async () => {
+
+    try {
+
+      setExporting(true)
+
+      const response = await reportAPI.exportExcel()
+      const blob = response?.data || response
+
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement("a")
+      link.href = url
+      link.setAttribute("download", "transactions_report.xlsx")
+
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      window.URL.revokeObjectURL(url)
+
+    } catch (error) {
+
+      console.error("Export report error:", error)
+
+    } finally {
+
+      setExporting(false)
+
+    }
+
+  }
+
   return (
     <div className="space-y-6">
 
       <div className="flex items-center justify-between">
 
         <h1 className="text-2xl font-bold">Reports</h1>
+
+        <button
+          onClick={handleExportExcel}
+          disabled={exporting}
+          className="px-4 py-2 rounded-lg bg-green-600 text-white disabled:opacity-60"
+        >
+          {exporting ? "Đang xuất..." : "Xuất Excel"}
+        </button>
 
       </div>
 
@@ -161,6 +215,51 @@ function Reports() {
             </LineChart>
 
           </ResponsiveContainer>
+
+        )}
+
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow">
+
+        <h2 className="font-semibold mb-4">Top danh mục chi tiêu</h2>
+
+        {topExpenseCategories.length === 0 ? (
+
+          <div className="text-gray-500 py-4">Chưa có dữ liệu danh mục chi tiêu</div>
+
+        ) : (
+
+          <div className="space-y-3">
+
+            {topExpenseCategories.map((item) => {
+
+              const amount = Number(item.total || 0)
+              const percent = topExpenseTotal > 0
+                ? (amount / topExpenseTotal) * 100
+                : 0
+
+              return (
+                <div key={item.category}>
+
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="font-medium text-gray-700">{item.category}</span>
+                    <span className="text-gray-600">{formatMoney(amount)}</span>
+                  </div>
+
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-red-500"
+                      style={{ width: `${Math.max(percent, 3)}%` }}
+                    />
+                  </div>
+
+                </div>
+              )
+
+            })}
+
+          </div>
 
         )}
 
