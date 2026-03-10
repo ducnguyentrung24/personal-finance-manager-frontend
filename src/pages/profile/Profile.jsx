@@ -1,14 +1,68 @@
-import { useContext } from "react"
+import { useContext, useState } from "react"
+import toast from "react-hot-toast"
+
 import { AuthContext } from "../../context/AuthContext"
+import authAPI from "../../api/auth.api"
+import Modal from "../../components/common/Modal"
 
 function Profile() {
 
   const { user } = useContext(AuthContext)
 
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmNewPassword: ""
+  })
+
   if (!user) return <p>Loading...</p>
 
+  const handleChangePassword = async (e) => {
+
+    e.preventDefault()
+
+    const { oldPassword, newPassword, confirmNewPassword } = passwordForm
+
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+      toast.error("Vui lòng nhập đầy đủ thông tin")
+      return
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Mật khẩu mới phải có ít nhất 6 ký tự")
+      return
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Xác nhận mật khẩu không khớp")
+      return
+    }
+
+    try {
+
+      await authAPI.changePassword({ oldPassword, newPassword })
+      toast.success("Đổi mật khẩu thành công")
+
+      setPasswordForm({
+        oldPassword: "",
+        newPassword: "",
+        confirmNewPassword: ""
+      })
+      setIsChangePasswordOpen(false)
+
+    } catch (error) {
+
+      console.error("Change password error:", error)
+      toast.error(error?.response?.data?.message || "Đổi mật khẩu thất bại")
+
+    }
+
+  }
+
   return (
-    <div className="max-w-3xl">
+    <>
+      <div className="max-w-3xl">
 
       <h1 className="text-2xl font-bold mb-6">
         Tài khoản của tôi
@@ -83,7 +137,10 @@ function Profile() {
         {/* ACTIONS */}
         <div className="border-t p-6 flex gap-4">
 
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button
+            onClick={() => setIsChangePasswordOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
             Đổi mật khẩu
           </button>
 
@@ -95,7 +152,77 @@ function Profile() {
 
       </div>
 
-    </div>
+      </div>
+
+      <Modal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        title="Đổi mật khẩu"
+      >
+
+      <form onSubmit={handleChangePassword} className="space-y-4">
+
+        <input
+          type="password"
+          placeholder="Mật khẩu cũ"
+          className="border rounded-lg px-3 py-2 w-full"
+          value={passwordForm.oldPassword}
+          onChange={(e) => setPasswordForm((prev) => ({
+            ...prev,
+            oldPassword: e.target.value
+          }))}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Mật khẩu mới"
+          className="border rounded-lg px-3 py-2 w-full"
+          value={passwordForm.newPassword}
+          onChange={(e) => setPasswordForm((prev) => ({
+            ...prev,
+            newPassword: e.target.value
+          }))}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Xác nhận mật khẩu mới"
+          className="border rounded-lg px-3 py-2 w-full"
+          value={passwordForm.confirmNewPassword}
+          onChange={(e) => setPasswordForm((prev) => ({
+            ...prev,
+            confirmNewPassword: e.target.value
+          }))}
+          required
+        />
+
+        <div className="flex justify-end gap-2">
+
+          <button
+            type="button"
+            onClick={() => setIsChangePasswordOpen(false)}
+            className="px-4 py-2 rounded-lg bg-gray-100"
+          >
+            Hủy
+          </button>
+
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+          >
+            Lưu mật khẩu
+          </button>
+
+        </div>
+
+      </form>
+
+      </Modal>
+
+    </>
+
   )
 }
 
