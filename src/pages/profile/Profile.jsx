@@ -3,17 +3,24 @@ import toast from "react-hot-toast"
 
 import { AuthContext } from "../../context/AuthContext"
 import authAPI from "../../api/auth.api"
+import userAPI from "../../api/user.api"
 import Modal from "../../components/common/Modal"
 
 function Profile() {
 
-  const { user } = useContext(AuthContext)
+  const { user, setUser } = useContext(AuthContext)
 
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+
   const [passwordForm, setPasswordForm] = useState({
     oldPassword: "",
     newPassword: "",
     confirmNewPassword: ""
+  })
+
+  const [profileForm, setProfileForm] = useState({
+    name: ""
   })
 
   if (!user) return <p>Loading...</p>
@@ -55,6 +62,48 @@ function Profile() {
 
       console.error("Change password error:", error)
       toast.error(error?.response?.data?.message || "Đổi mật khẩu thất bại")
+
+    }
+
+  }
+
+  const openEditProfileModal = () => {
+    setProfileForm({
+      name: user?.name || ""
+    })
+    setIsEditProfileOpen(true)
+  }
+
+  const handleUpdateProfile = async (e) => {
+
+    e.preventDefault()
+
+    if (!profileForm.name.trim()) {
+      toast.error("Tên không được để trống")
+      return
+    }
+
+    if (profileForm.name.trim().length < 2) {
+      toast.error("Tên phải có ít nhất 2 ký tự")
+      return
+    }
+
+    try {
+
+      const res = await userAPI.updateMe({
+        name: profileForm.name.trim()
+      })
+
+      const updatedUser = res?.data?.data || res?.data || res
+      setUser(updatedUser)
+
+      toast.success("Cập nhật thông tin thành công")
+      setIsEditProfileOpen(false)
+
+    } catch (error) {
+
+      console.error("Update profile error:", error)
+      toast.error(error?.response?.data?.message || "Cập nhật thông tin thất bại")
 
     }
 
@@ -144,7 +193,10 @@ function Profile() {
             Đổi mật khẩu
           </button>
 
-          <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
+          <button
+            onClick={openEditProfileModal}
+            className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+          >
             Chỉnh sửa thông tin
           </button>
 
@@ -218,6 +270,46 @@ function Profile() {
         </div>
 
       </form>
+
+      </Modal>
+
+      <Modal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        title="Chỉnh sửa thông tin cá nhân"
+      >
+
+        <form onSubmit={handleUpdateProfile} className="space-y-4">
+
+          <input
+            type="text"
+            placeholder="Họ và tên"
+            className="border rounded-lg px-3 py-2 w-full"
+            value={profileForm.name}
+            onChange={(e) => setProfileForm({ name: e.target.value })}
+            required
+          />
+
+          <div className="flex justify-end gap-2">
+
+            <button
+              type="button"
+              onClick={() => setIsEditProfileOpen(false)}
+              className="px-4 py-2 rounded-lg bg-gray-100"
+            >
+              Hủy
+            </button>
+
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+            >
+              Lưu thông tin
+            </button>
+
+          </div>
+
+        </form>
 
       </Modal>
 
