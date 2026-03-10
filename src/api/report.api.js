@@ -8,6 +8,16 @@ const reportAPI = {
 
   getMonthly() {
     return axiosClient.get("/reports/monthly")
+  },
+
+  getTopExpenseCategories() {
+    return axiosClient.get("/reports/top-expense-categories")
+  },
+
+  exportExcel() {
+    return axiosClient.get("/reports/export-excel", {
+      responseType: "blob"
+    })
   }
 
 }
