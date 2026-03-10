@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
+import categoryAPI from "../../api/category.api"
 
 function AddTransactionForm({ onClose }) {
 
@@ -13,12 +14,21 @@ function AddTransactionForm({ onClose }) {
     date: today
   })
 
-  const categories = [
-    { id: 1, name: "Ăn uống" },
-    { id: 2, name: "Lương" },
-    { id: 3, name: "Giải trí" },
-    { id: 4, name: "Học tập" }
-  ]
+  const [categories, setCategories] = useState([])
+
+  // Load categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await categoryAPI.getAll()
+        setCategories(res.data)
+      } catch (error) {
+        console.error("Failed to fetch categories:", error)
+      }
+    }
+
+    fetchCategories()
+  }, [])
 
   const handleChange = (e) => {
     setForm({
@@ -29,7 +39,9 @@ function AddTransactionForm({ onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     console.log("Transaction:", form)
+
     onClose()
   }
 
@@ -37,6 +49,7 @@ function AddTransactionForm({ onClose }) {
     <form onSubmit={handleSubmit} className="space-y-4">
 
       {/* TITLE */}
+
       <input
         type="text"
         name="title"
@@ -47,6 +60,7 @@ function AddTransactionForm({ onClose }) {
       />
 
       {/* AMOUNT */}
+
       <input
         type="number"
         name="amount"
@@ -57,7 +71,9 @@ function AddTransactionForm({ onClose }) {
       />
 
       {/* TYPE */}
+
       <div className="relative">
+
         <select
           name="type"
           className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -72,10 +88,13 @@ function AddTransactionForm({ onClose }) {
           size={18}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
         />
+
       </div>
 
       {/* CATEGORY */}
+
       <div className="relative">
+
         <select
           name="category"
           className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -85,19 +104,22 @@ function AddTransactionForm({ onClose }) {
           <option value="">Chọn danh mục</option>
 
           {categories.map((cat) => (
-            <option key={cat.id} value={cat.name}>
+            <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
           ))}
+
         </select>
 
         <ChevronDown
           size={18}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
         />
+
       </div>
 
       {/* DATE */}
+
       <input
         type="date"
         name="date"
@@ -106,7 +128,8 @@ function AddTransactionForm({ onClose }) {
         onChange={handleChange}
       />
 
-      {/* BUTTON */}
+      {/* SUBMIT BUTTON */}
+
       <button
         type="submit"
         className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
