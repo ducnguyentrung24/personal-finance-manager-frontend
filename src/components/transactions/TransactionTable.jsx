@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { Trash2 } from "lucide-react"
+
 import transactionAPI from "../../api/transaction.api"
 
 function TransactionTable() {
@@ -16,17 +18,42 @@ function TransactionTable() {
   useEffect(() => {
 
     const fetchTransactions = async () => {
+
       try {
+
         const res = await transactionAPI.getAll()
+
         setTransactions(res.data)
+
       } catch (error) {
-        console.error("Fetch transactions error:", error)
+
+        console.error(error)
+
       }
+
     }
 
     fetchTransactions()
 
   }, [])
+
+  const handleDelete = async (id) => {
+
+    if (!confirm("Bạn có chắc muốn xóa giao dịch này?")) return
+
+    try {
+
+      await transactionAPI.delete(id)
+
+      setTransactions(transactions.filter(t => t._id !== id))
+
+    } catch (error) {
+
+      console.error(error)
+
+    }
+
+  }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow">
@@ -43,6 +70,7 @@ function TransactionTable() {
             <th>Danh mục</th>
             <th>Số tiền</th>
             <th>Ngày</th>
+            <th>Hành động</th>
           </tr>
         </thead>
 
@@ -71,6 +99,17 @@ function TransactionTable() {
 
               <td>
                 {formatDate(t.date)}
+              </td>
+
+              <td>
+
+                <button
+                  onClick={() => handleDelete(t._id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 size={18} />
+                </button>
+
               </td>
 
             </tr>
