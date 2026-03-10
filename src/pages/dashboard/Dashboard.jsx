@@ -1,4 +1,5 @@
 import StatCard from "../../components/common/StatCard"
+import IncomeExpenseChart from "../../components/charts/IncomeExpenseChart"
 
 function Dashboard() {
 
@@ -13,7 +14,6 @@ function Dashboard() {
         Dashboard
       </h1>
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-6">
 
         <StatCard
@@ -41,6 +41,8 @@ function Dashboard() {
         />
 
       </div>
+
+      <IncomeExpenseChart />
 
     </div>
   )
