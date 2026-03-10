@@ -9,6 +9,7 @@ import Transactions from "../pages/transactions/Transactions"
 import Categories from "../pages/categories/Categories"
 import Reports from "../pages/reports/Reports"
 import Users from "../pages/users/Users"
+import Profile from "../pages/profile/Profile"
 
 function AppRoutes() {
   return (
@@ -36,6 +37,8 @@ function AppRoutes() {
           <Route path="reports" element={<Reports />} />
 
           <Route path="users" element={<Users />} />
+
+          <Route path="profile" element={<Profile />} />
 
         </Route>
 
