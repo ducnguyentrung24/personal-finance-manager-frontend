@@ -1,4 +1,6 @@
 import { Trash2 } from "lucide-react"
+import toast from "react-hot-toast"
+
 import transactionAPI from "../../api/transaction.api"
 
 function TransactionTable({ transactions, setTransactions }) {
@@ -21,9 +23,11 @@ function TransactionTable({ transactions, setTransactions }) {
 
       setTransactions(transactions.filter(t => t._id !== id))
 
+      toast.success("Đã xóa giao dịch")
+
     } catch (error) {
 
-      console.error("Delete error:", error)
+      toast.error("Xóa giao dịch thất bại")
 
     }
 

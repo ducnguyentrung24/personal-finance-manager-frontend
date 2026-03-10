@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
+import toast from "react-hot-toast"
 
 import categoryAPI from "../../api/category.api"
 import transactionAPI from "../../api/transaction.api"
@@ -63,13 +64,15 @@ function AddTransactionForm({ onClose, refreshTransactions }) {
         date: form.date
       })
 
+      toast.success("Thêm giao dịch thành công")
+
       await refreshTransactions()
 
       onClose()
 
     } catch (error) {
 
-      console.error("Create transaction error:", error)
+      toast.error("Không thể thêm giao dịch")
 
     }
 
