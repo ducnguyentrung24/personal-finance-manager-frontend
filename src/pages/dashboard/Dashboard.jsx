@@ -24,15 +24,33 @@ function Dashboard() {
 
       try {
 
-        const res = await reportAPI.getDashboard()
+        const [dashboardRes, monthlyRes] = await Promise.all([
+          reportAPI.getDashboard(),
+          reportAPI.getMonthly()
+        ])
 
-        const data = res.data || res
+        const data = dashboardRes.data || dashboardRes
+        const monthlyData = monthlyRes.data || monthlyRes
+
+        const totalIncome = Number(data.totalIncome || 0)
+        const totalExpense = Number(data.totalExpense || 0)
+        const balance = Number(
+          data.balance ?? data.totalBalance ?? (totalIncome - totalExpense)
+        )
+
+        const latestMonth = Array.isArray(monthlyData) && monthlyData.length > 0
+          ? monthlyData[monthlyData.length - 1]
+          : null
+
+        const monthlySavings = latestMonth
+          ? Number(latestMonth.income || 0) - Number(latestMonth.expense || 0)
+          : 0
 
         setStats({
-          totalBalance: data.totalBalance || 0,
-          totalIncome: data.totalIncome || 0,
-          totalExpense: data.totalExpense || 0,
-          savings: data.savings || 0
+          totalBalance: balance,
+          totalIncome,
+          totalExpense,
+          savings: monthlySavings
         })
 
       } catch (error) {
@@ -77,7 +95,7 @@ function Dashboard() {
         />
 
         <StatCard
-          title="Tiết kiệm"
+          title="Tiết kiệm (tháng)"
           value={formatMoney(stats.savings)}
           color="text-purple-600"
         />

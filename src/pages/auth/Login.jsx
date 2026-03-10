@@ -40,7 +40,7 @@ function Login() {
       const status = error?.response?.status
 
       if (status === 403) {
-        toast.error("Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên")
+        toast.error("Tài khoản này đã bị khóa, vui lòng liên hệ quản trị viên để được hỗ trợ")
       } else {
         toast.error("Email hoặc mật khẩu không đúng")
       }

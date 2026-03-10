@@ -291,8 +291,8 @@ function Categories() {
             onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
             required
           >
-            <option value="expense">expense</option>
-            <option value="income">income</option>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
           </select>
 
           <div className="flex justify-end gap-2">
