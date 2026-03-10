@@ -1,17 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
-import { Lock, LockOpen, Pencil, Plus, Trash2 } from "lucide-react"
+import { Lock, LockOpen, Trash2 } from "lucide-react"
 
 import userAPI from "../../api/user.api"
-import Modal from "../../components/common/Modal"
 import ConfirmModal from "../../components/common/ConfirmModal"
-
-const EMPTY_FORM = {
-  name: "",
-  email: "",
-  password: "",
-  role: "user"
-}
 
 function Users() {
 
@@ -19,10 +11,6 @@ function Users() {
   const [search, setSearch] = useState("")
   const [selectedIds, setSelectedIds] = useState([])
   const [loading, setLoading] = useState(true)
-
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
-  const [form, setForm] = useState(EMPTY_FORM)
 
   const [deletingUser, setDeletingUser] = useState(null)
 
@@ -91,66 +79,6 @@ function Users() {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     )
-  }
-
-  const openCreateModal = () => {
-    setEditingUser(null)
-    setForm(EMPTY_FORM)
-    setIsModalOpen(true)
-  }
-
-  const openEditModal = (user) => {
-    setEditingUser(user)
-    setForm({
-      name: user.name || "",
-      email: user.email || "",
-      password: "",
-      role: user.role || "user"
-    })
-    setIsModalOpen(true)
-  }
-
-  const handleSaveUser = async (e) => {
-
-    e.preventDefault()
-
-    try {
-
-      if (editingUser?._id) {
-        const payload = {
-          name: form.name.trim(),
-          email: form.email.trim(),
-          role: form.role
-        }
-
-        if (form.password.trim()) {
-          payload.password = form.password.trim()
-        }
-
-        await userAPI.update(editingUser._id, payload)
-        toast.success("Cập nhật user thành công")
-      } else {
-        await userAPI.create({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          password: form.password.trim(),
-          role: form.role
-        })
-        toast.success("Tạo user thành công")
-      }
-
-      setIsModalOpen(false)
-      setEditingUser(null)
-      setForm(EMPTY_FORM)
-      fetchUsers()
-
-    } catch (error) {
-
-      console.error("Save user error:", error)
-      toast.error(error?.response?.data?.message || "Lưu user thất bại")
-
-    }
-
   }
 
   const handleDeleteUser = async () => {
@@ -224,25 +152,13 @@ function Users() {
 
         <h1 className="text-2xl font-bold">Users Management</h1>
 
-        <div className="flex items-center gap-2">
-
-          <button
-            onClick={handleDeleteSelected}
-            disabled={selectedIds.length === 0}
-            className="px-4 py-2 rounded-lg bg-red-600 text-white disabled:opacity-50"
-          >
-            Xóa đã chọn ({selectedIds.length})
-          </button>
-
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white"
-          >
-            <Plus size={18} />
-            Thêm user
-          </button>
-
-        </div>
+        <button
+          onClick={handleDeleteSelected}
+          disabled={selectedIds.length === 0}
+          className="px-4 py-2 rounded-lg bg-red-600 text-white disabled:opacity-50"
+        >
+          Xóa đã chọn ({selectedIds.length})
+        </button>
 
       </div>
 
@@ -314,14 +230,6 @@ function Users() {
                       <div className="flex items-center gap-2">
 
                         <button
-                          onClick={() => openEditModal(user)}
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                          title="Sửa"
-                        >
-                          <Pencil size={16} />
-                        </button>
-
-                        <button
                           onClick={() => handleToggleLock(user)}
                           className="p-2 rounded-lg hover:bg-yellow-50 text-yellow-700"
                           title={user.isActive ? "Khóa" : "Mở khóa"}
@@ -351,74 +259,6 @@ function Users() {
         )}
 
       </div>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingUser ? "Chỉnh sửa user" : "Thêm user mới"}
-      >
-
-        <form onSubmit={handleSaveUser} className="space-y-4">
-
-          <input
-            type="text"
-            placeholder="Tên"
-            className="border rounded-lg px-3 py-2 w-full"
-            value={form.name}
-            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-            required
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            className="border rounded-lg px-3 py-2 w-full"
-            value={form.email}
-            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder={editingUser ? "Mật khẩu mới (không bắt buộc)" : "Mật khẩu"}
-            className="border rounded-lg px-3 py-2 w-full"
-            value={form.password}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            required={!editingUser}
-          />
-
-          <select
-            className="border rounded-lg px-3 py-2 w-full"
-            value={form.role}
-            onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-            required
-          >
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-          </select>
-
-          <div className="flex justify-end gap-2">
-
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-lg bg-gray-100"
-            >
-              Hủy
-            </button>
-
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white"
-            >
-              {editingUser ? "Lưu" : "Tạo"}
-            </button>
-
-          </div>
-
-        </form>
-
-      </Modal>
 
       <ConfirmModal
         isOpen={Boolean(deletingUser)}
