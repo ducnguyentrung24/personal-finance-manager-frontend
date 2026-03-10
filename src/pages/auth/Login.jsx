@@ -36,7 +36,14 @@ function Login() {
     } catch (error) {
 
       console.error(error)
-      toast.error("Email hoặc mật khẩu không đúng")
+
+      const status = error?.response?.status
+
+      if (status === 403) {
+        toast.error("Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên")
+      } else {
+        toast.error("Email hoặc mật khẩu không đúng")
+      }
 
     }
 
