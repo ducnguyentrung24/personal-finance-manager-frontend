@@ -9,12 +9,17 @@ import {
 
 function Sidebar() {
 
+  const userRaw = localStorage.getItem("user")
+  const user = userRaw ? JSON.parse(userRaw) : null
+
   const menu = [
     { name: "Dashboard", path: "/", icon: LayoutDashboard },
     { name: "Transactions", path: "/transactions", icon: Wallet },
     { name: "Categories", path: "/categories", icon: Tags },
     { name: "Reports", path: "/reports", icon: BarChart3 },
-    { name: "Users", path: "/users", icon: Users }
+    ...(user?.role === "admin"
+      ? [{ name: "Users", path: "/users", icon: Users }]
+      : [])
   ]
 
   return (
