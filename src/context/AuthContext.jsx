@@ -15,11 +15,13 @@ function AuthProvider({ children }) {
       const res = await userAPI.getMe()
 
       setUser(res.data)
+      localStorage.setItem("user", JSON.stringify(res.data))
 
     } catch (error) {
 
       console.error("Fetch user error:", error)
       setUser(null)
+      localStorage.removeItem("user")
 
     }
 
@@ -33,6 +35,7 @@ function AuthProvider({ children }) {
       fetchUser()
     } else {
       setUser(null)
+      localStorage.removeItem("user")
     }
 
   }, [])
