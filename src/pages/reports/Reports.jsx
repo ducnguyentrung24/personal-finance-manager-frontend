@@ -1,15 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts"
-
 import StatCard from "../../components/common/StatCard"
 import reportAPI from "../../api/report.api"
 
@@ -185,7 +175,7 @@ function Reports() {
 
       <div className="bg-white p-6 rounded-xl shadow">
 
-        <h2 className="font-semibold mb-4">Thu nhập vs Chi tiêu theo tháng</h2>
+        <h2 className="font-semibold mb-4">Phân tích theo tháng</h2>
 
         {loading ? (
 
@@ -197,24 +187,46 @@ function Reports() {
 
         ) : (
 
-          <ResponsiveContainer width="100%" height={320}>
+          <div className="overflow-x-auto">
 
-            <LineChart data={monthly} margin={{ top: 10, right: 24, left: 40, bottom: 0 }}>
+            <table className="w-full text-sm">
 
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => Number(value).toLocaleString("vi-VN")} />
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-2 pr-4">Tháng</th>
+                  <th className="py-2 pr-4 text-green-700">Thu nhập</th>
+                  <th className="py-2 pr-4 text-red-700">Chi tiêu</th>
+                  <th className="py-2 pr-4 text-blue-700">Tiết kiệm</th>
+                  <th className="py-2 pr-4">Tỷ lệ tiết kiệm</th>
+                </tr>
+              </thead>
 
-              <Tooltip
-                formatter={(value) => formatMoney(value)}
-              />
+              <tbody>
 
-              <Line type="monotone" dataKey="income" stroke="#16a34a" strokeWidth={3} name="Income" />
-              <Line type="monotone" dataKey="expense" stroke="#dc2626" strokeWidth={3} name="Expense" />
+                {monthly.map((row) => {
+                  const income = Number(row.income || 0)
+                  const expense = Number(row.expense || 0)
+                  const saving = income - expense
+                  const savingRate = income > 0 ? (saving / income) * 100 : 0
 
-            </LineChart>
+                  return (
+                    <tr key={row.month} className="border-b last:border-b-0">
+                      <td className="py-2 pr-4 font-medium">{row.month}</td>
+                      <td className="py-2 pr-4">{formatMoney(income)}</td>
+                      <td className="py-2 pr-4">{formatMoney(expense)}</td>
+                      <td className={`py-2 pr-4 ${saving >= 0 ? "text-blue-700" : "text-red-600"}`}>
+                        {formatMoney(saving)}
+                      </td>
+                      <td className="py-2 pr-4">{savingRate.toFixed(1)}%</td>
+                    </tr>
+                  )
+                })}
 
-          </ResponsiveContainer>
+              </tbody>
+
+            </table>
+
+          </div>
 
         )}
 
