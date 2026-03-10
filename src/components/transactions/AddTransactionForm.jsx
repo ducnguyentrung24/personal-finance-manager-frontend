@@ -7,7 +7,7 @@ import categoryAPI from "../../api/category.api"
 
 function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
-  const [title, setTitle] = useState("")
+  const [note, setNote] = useState("")
   const [amount, setAmount] = useState("")
   const [type, setType] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -27,10 +27,9 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
     if (transaction) {
 
-      setTitle(transaction.title)
+      setNote(transaction.note)
       setAmount(transaction.amount)
-      setType(transaction.type)
-      setCategoryId(transaction.category?._id || "")
+      setCategoryId(transaction.categoryId?._id || "")
       setDate(formatDateForInput(transaction.date))
 
     }
@@ -69,10 +68,8 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
       : categories.filter((c) => c.type === type)
 
   const handleTypeChange = (value) => {
-
     setType(value)
     setCategoryId("")
-
   }
 
   // YYYY-MM-DD → YYYY/DD/MM
@@ -102,12 +99,13 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
     try {
 
       const payload = {
-        title,
         amount: Number(amount),
-        type,
-        category: categoryId,
-        date: formatDateForAPI(date)
+        categoryId: categoryId,
+        date: formatDateForAPI(date),
+        note: note
       }
+
+      console.log("Payload:", payload)
 
       if (transaction) {
 
@@ -136,15 +134,14 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
 
-      {/* TITLE */}
+      {/* NOTE */}
 
       <input
         type="text"
-        placeholder="Tiêu đề"
+        placeholder="Ghi chú"
         className="border rounded-lg px-3 py-2 w-full"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
       />
 
       {/* AMOUNT */}
@@ -195,7 +192,7 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
       <div className="relative">
 
         <select
-          className="border rounded-lg px-3 py-2 w-full appearance-none disabled:opacity-60"
+          className="border rounded-lg px-3 py-2 w-full appearance-none"
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
           disabled={!type}
