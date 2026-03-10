@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react"
 import categoryAPI from "../../api/category.api"
 import transactionAPI from "../../api/transaction.api"
 
-function AddTransactionForm({ onClose }) {
+function AddTransactionForm({ onClose, refreshTransactions }) {
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -18,16 +18,22 @@ function AddTransactionForm({ onClose }) {
 
   const [categories, setCategories] = useState([])
 
-  // Load categories from backend
   useEffect(() => {
 
     const fetchCategories = async () => {
+
       try {
+
         const res = await categoryAPI.getAll()
+
         setCategories(res.data)
+
       } catch (error) {
+
         console.error("Fetch categories error:", error)
+
       }
+
     }
 
     fetchCategories()
@@ -35,13 +41,16 @@ function AddTransactionForm({ onClose }) {
   }, [])
 
   const handleChange = (e) => {
+
     setForm({
       ...form,
       [e.target.name]: e.target.value
     })
+
   }
 
   const handleSubmit = async (e) => {
+
     e.preventDefault()
 
     try {
@@ -54,48 +63,44 @@ function AddTransactionForm({ onClose }) {
         date: form.date
       })
 
+      await refreshTransactions()
+
       onClose()
 
-      // reload table
-      window.location.reload()
-
     } catch (error) {
+
       console.error("Create transaction error:", error)
+
     }
+
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
 
-      {/* TITLE */}
-
       <input
         type="text"
         name="title"
         placeholder="Tiêu đề"
-        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border rounded-lg px-3 py-2"
         value={form.title}
         onChange={handleChange}
       />
-
-      {/* AMOUNT */}
 
       <input
         type="number"
         name="amount"
         placeholder="Số tiền"
-        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border rounded-lg px-3 py-2"
         value={form.amount}
         onChange={handleChange}
       />
-
-      {/* TYPE */}
 
       <div className="relative">
 
         <select
           name="type"
-          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none"
           value={form.type}
           onChange={handleChange}
         >
@@ -110,13 +115,11 @@ function AddTransactionForm({ onClose }) {
 
       </div>
 
-      {/* CATEGORY */}
-
       <div className="relative">
 
         <select
           name="category"
-          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none"
           value={form.category}
           onChange={handleChange}
         >
@@ -137,21 +140,17 @@ function AddTransactionForm({ onClose }) {
 
       </div>
 
-      {/* DATE */}
-
       <input
         type="date"
         name="date"
-        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border rounded-lg px-3 py-2"
         value={form.date}
         onChange={handleChange}
       />
 
-      {/* BUTTON */}
-
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
       >
         Thêm giao dịch
       </button>

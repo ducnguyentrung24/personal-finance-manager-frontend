@@ -1,11 +1,37 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
 import TransactionTable from "../../components/transactions/TransactionTable"
 import Modal from "../../components/common/Modal"
 import AddTransactionForm from "../../components/transactions/AddTransactionForm"
 
+import transactionAPI from "../../api/transaction.api"
+
 function Transactions() {
 
   const [open, setOpen] = useState(false)
+  const [transactions, setTransactions] = useState([])
+
+  const fetchTransactions = async () => {
+
+    try {
+
+      const res = await transactionAPI.getAll()
+
+      setTransactions(res.data)
+
+    } catch (error) {
+
+      console.error("Fetch transactions error:", error)
+
+    }
+
+  }
+
+  useEffect(() => {
+
+    fetchTransactions()
+
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -25,14 +51,20 @@ function Transactions() {
 
       </div>
 
-      <TransactionTable />
+      <TransactionTable
+        transactions={transactions}
+        setTransactions={setTransactions}
+      />
 
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}
         title="Thêm giao dịch"
       >
-        <AddTransactionForm onClose={() => setOpen(false)} />
+        <AddTransactionForm
+          onClose={() => setOpen(false)}
+          refreshTransactions={fetchTransactions}
+        />
       </Modal>
 
     </div>

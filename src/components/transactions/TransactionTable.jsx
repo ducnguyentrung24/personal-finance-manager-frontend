@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react"
 import { Trash2 } from "lucide-react"
-
 import transactionAPI from "../../api/transaction.api"
 
-function TransactionTable() {
-
-  const [transactions, setTransactions] = useState([])
+function TransactionTable({ transactions, setTransactions }) {
 
   const formatMoney = (value) => {
     return value.toLocaleString("vi-VN") + " ₫"
@@ -14,28 +10,6 @@ function TransactionTable() {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("vi-VN")
   }
-
-  useEffect(() => {
-
-    const fetchTransactions = async () => {
-
-      try {
-
-        const res = await transactionAPI.getAll()
-
-        setTransactions(res.data)
-
-      } catch (error) {
-
-        console.error(error)
-
-      }
-
-    }
-
-    fetchTransactions()
-
-  }, [])
 
   const handleDelete = async (id) => {
 
@@ -49,7 +23,7 @@ function TransactionTable() {
 
     } catch (error) {
 
-      console.error(error)
+      console.error("Delete error:", error)
 
     }
 
