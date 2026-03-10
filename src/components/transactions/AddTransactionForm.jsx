@@ -1,52 +1,97 @@
-import { useState, useEffect } from "react"
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import { ChevronDown } from "lucide-react"
 
-import categoryAPI from "../../api/category.api"
 import transactionAPI from "../../api/transaction.api"
+import categoryAPI from "../../api/category.api"
 
-function AddTransactionForm({ onClose, refreshTransactions }) {
+function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
-  const today = new Date().toISOString().split("T")[0]
-
-  const [form, setForm] = useState({
-    title: "",
-    amount: "",
-    type: "expense",
-    category: "",
-    date: today
-  })
-
+  const [title, setTitle] = useState("")
+  const [amount, setAmount] = useState("")
+  const [type, setType] = useState("")
+  const [categoryId, setCategoryId] = useState("")
+  const [date, setDate] = useState("")
   const [categories, setCategories] = useState([])
 
   useEffect(() => {
 
-    const fetchCategories = async () => {
+    fetchCategories()
 
-      try {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, "0")
+    const day = String(today.getDate()).padStart(2, "0")
 
-        const res = await categoryAPI.getAll()
+    setDate(`${year}-${month}-${day}`)
 
-        setCategories(res.data)
+    if (transaction) {
 
-      } catch (error) {
-
-        console.error("Fetch categories error:", error)
-
-      }
+      setTitle(transaction.title)
+      setAmount(transaction.amount)
+      setType(transaction.type)
+      setCategoryId(transaction.category?._id || "")
+      setDate(formatDateForInput(transaction.date))
 
     }
 
-    fetchCategories()
-
   }, [])
 
-  const handleChange = (e) => {
+  const fetchCategories = async () => {
 
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
+    try {
+
+      const res = await categoryAPI.getAll()
+
+      const data =
+        Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.data?.data)
+          ? res.data.data
+          : []
+
+      setCategories(data)
+
+    } catch (error) {
+
+      console.error(error)
+      toast.error("Không tải được danh mục")
+
+    }
+
+  }
+
+  const filteredCategories =
+    type === ""
+      ? []
+      : categories.filter((c) => c.type === type)
+
+  const handleTypeChange = (value) => {
+
+    setType(value)
+    setCategoryId("")
+
+  }
+
+  // YYYY-MM-DD → YYYY/DD/MM
+  const formatDateForAPI = (date) => {
+
+    const [year, month, day] = date.split("-")
+
+    return `${year}/${day}/${month}`
+
+  }
+
+  // YYYY/DD/MM → YYYY-MM-DD
+  const formatDateForInput = (date) => {
+
+    if (!date) return ""
+
+    const [year, day, month] = date.split("/")
+
+    return `${year}-${month}-${day}`
 
   }
 
@@ -56,23 +101,33 @@ function AddTransactionForm({ onClose, refreshTransactions }) {
 
     try {
 
-      await transactionAPI.create({
-        title: form.title,
-        amount: Number(form.amount),
-        type: form.type,
-        category: form.category,
-        date: form.date
-      })
+      const payload = {
+        title,
+        amount: Number(amount),
+        type,
+        category: categoryId,
+        date: formatDateForAPI(date)
+      }
 
-      toast.success("Thêm giao dịch thành công")
+      if (transaction) {
 
-      await refreshTransactions()
+        await transactionAPI.update(transaction._id, payload)
+        toast.success("Cập nhật giao dịch thành công")
 
+      } else {
+
+        await transactionAPI.create(payload)
+        toast.success("Thêm giao dịch thành công")
+
+      }
+
+      refreshTransactions()
       onClose()
 
     } catch (error) {
 
-      toast.error("Không thể thêm giao dịch")
+      console.error(error)
+      toast.error("Thao tác thất bại")
 
     }
 
@@ -81,81 +136,110 @@ function AddTransactionForm({ onClose, refreshTransactions }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
 
+      {/* TITLE */}
+
       <input
         type="text"
-        name="title"
         placeholder="Tiêu đề"
-        className="w-full border rounded-lg px-3 py-2"
-        value={form.title}
-        onChange={handleChange}
+        className="border rounded-lg px-3 py-2 w-full"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
       />
+
+      {/* AMOUNT */}
 
       <input
         type="number"
-        name="amount"
         placeholder="Số tiền"
-        className="w-full border rounded-lg px-3 py-2"
-        value={form.amount}
-        onChange={handleChange}
+        className="border rounded-lg px-3 py-2 w-full"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        required
       />
+
+      {/* TYPE */}
 
       <div className="relative">
 
         <select
-          name="type"
-          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none"
-          value={form.type}
-          onChange={handleChange}
+          className="border rounded-lg px-3 py-2 w-full appearance-none"
+          value={type}
+          onChange={(e) => handleTypeChange(e.target.value)}
+          required
         >
-          <option value="expense">Chi tiêu</option>
-          <option value="income">Thu nhập</option>
+
+          <option value="">
+            Chọn loại giao dịch
+          </option>
+
+          <option value="expense">
+            Chi tiêu
+          </option>
+
+          <option value="income">
+            Thu nhập
+          </option>
+
         </select>
 
         <ChevronDown
           size={18}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
         />
 
       </div>
 
+      {/* CATEGORY */}
+
       <div className="relative">
 
         <select
-          name="category"
-          className="w-full border rounded-lg px-3 py-2 pr-10 appearance-none"
-          value={form.category}
-          onChange={handleChange}
+          className="border rounded-lg px-3 py-2 w-full appearance-none disabled:opacity-60"
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          disabled={!type}
+          required
         >
-          <option value="">Chọn danh mục</option>
 
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
+          <option value="">
+            Chọn danh mục
+          </option>
+
+          {filteredCategories.map((c) => (
+
+            <option key={c._id} value={c._id}>
+              {c.name}
             </option>
+
           ))}
 
         </select>
 
         <ChevronDown
           size={18}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
         />
 
       </div>
 
+      {/* DATE */}
+
       <input
         type="date"
-        name="date"
-        className="w-full border rounded-lg px-3 py-2"
-        value={form.date}
-        onChange={handleChange}
+        className="border rounded-lg px-3 py-2 w-full"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        required
       />
+
+      {/* SUBMIT */}
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+        className="w-full bg-blue-600 text-white py-2 rounded-lg"
       >
-        Thêm giao dịch
+        {transaction ? "Cập nhật giao dịch" : "Thêm giao dịch"}
       </button>
 
     </form>
