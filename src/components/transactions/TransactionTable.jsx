@@ -9,7 +9,12 @@ function TransactionTable({ transactions, setTransactions }) {
   }
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("vi-VN")
+
+    if (!date) return ""
+
+    const [year, day, month] = date.split("/")
+
+    return `${day}/${month}/${year}`
   }
 
   const handleDelete = async (id) => {
@@ -20,7 +25,6 @@ function TransactionTable({ transactions, setTransactions }) {
 
       await transactionAPI.delete(id)
 
-      // dùng callback để tránh state cũ
       setTransactions((prev) =>
         prev.filter((t) => t._id !== id)
       )
@@ -42,8 +46,6 @@ function TransactionTable({ transactions, setTransactions }) {
       <h2 className="font-semibold mb-4">
         Giao dịch
       </h2>
-
-      {/* EMPTY STATE */}
 
       {transactions.length === 0 && (
 
@@ -78,6 +80,7 @@ function TransactionTable({ transactions, setTransactions }) {
           <tbody>
 
             {transactions.map((t) => (
+
               <tr key={t._id} className="border-b hover:bg-gray-50">
 
                 <td className="py-3 font-medium">
@@ -114,6 +117,7 @@ function TransactionTable({ transactions, setTransactions }) {
                 </td>
 
               </tr>
+
             ))}
 
           </tbody>
