@@ -4,18 +4,23 @@ import { Outlet } from "react-router-dom"
 
 function MainLayout() {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="h-screen bg-gray-100 grid grid-cols-[16rem_1fr] grid-rows-[4rem_1fr]">
 
-      <Sidebar />
-
-      <div className="flex flex-col flex-1">
-        <Header />
-
-        <main className="p-6">
-          <Outlet />
-        </main>
-
+      <div className="bg-white border-r border-b border-gray-200 flex items-center px-6 text-xl font-bold">
+        Finance Manager
       </div>
+
+      <div className="bg-white border-b border-gray-200">
+        <Header />
+      </div>
+
+      <aside className="bg-white border-r border-gray-200 overflow-y-auto">
+        <Sidebar />
+      </aside>
+
+      <main className="p-6 overflow-y-auto">
+        <Outlet />
+      </main>
 
     </div>
   )

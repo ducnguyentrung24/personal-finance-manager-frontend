@@ -40,7 +40,7 @@ function Header() {
   }, [])
 
   return (
-    <header className="bg-white border-b h-16 flex items-center justify-between px-6">
+    <header className="h-full bg-white flex items-center justify-between px-6">
 
       {/* PAGE TITLE */}
       <h1 className="text-lg font-semibold text-gray-800">
