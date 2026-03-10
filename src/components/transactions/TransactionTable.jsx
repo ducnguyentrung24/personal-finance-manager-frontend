@@ -1,31 +1,9 @@
+import { useEffect, useState } from "react"
+import transactionAPI from "../../api/transaction.api"
+
 function TransactionTable() {
 
-  const transactions = [
-    {
-      id: 1,
-      title: "Lương",
-      category: "Salary",
-      amount: 10000000,
-      type: "income",
-      date: "2026-03-01"
-    },
-    {
-      id: 2,
-      title: "Ăn uống",
-      category: "Food",
-      amount: 200000,
-      type: "expense",
-      date: "2026-03-02"
-    },
-    {
-      id: 3,
-      title: "Mua sách",
-      category: "Education",
-      amount: 150000,
-      type: "expense",
-      date: "2026-03-03"
-    }
-  ]
+  const [transactions, setTransactions] = useState([])
 
   const formatMoney = (value) => {
     return value.toLocaleString("vi-VN") + " ₫"
@@ -35,11 +13,26 @@ function TransactionTable() {
     return new Date(date).toLocaleDateString("vi-VN")
   }
 
+  useEffect(() => {
+
+    const fetchTransactions = async () => {
+      try {
+        const res = await transactionAPI.getAll()
+        setTransactions(res.data)
+      } catch (error) {
+        console.error("Fetch transactions error:", error)
+      }
+    }
+
+    fetchTransactions()
+
+  }, [])
+
   return (
     <div className="bg-white p-6 rounded-xl shadow">
 
       <h2 className="font-semibold mb-4">
-        Giao dịch gần đây
+        Giao dịch
       </h2>
 
       <table className="w-full text-left">
@@ -56,17 +49,14 @@ function TransactionTable() {
         <tbody>
 
           {transactions.map((t) => (
-            <tr
-              key={t.id}
-              className="border-b hover:bg-gray-50 transition"
-            >
+            <tr key={t._id} className="border-b hover:bg-gray-50">
 
               <td className="py-3 font-medium">
                 {t.title}
               </td>
 
               <td>
-                {t.category}
+                {t.category?.name || "N/A"}
               </td>
 
               <td
