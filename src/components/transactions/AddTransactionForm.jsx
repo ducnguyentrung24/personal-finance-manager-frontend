@@ -73,7 +73,6 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
     setCategoryId("")
   }
 
-  // ISO/Date-like string -> YYYY-MM-DD
   const formatDateForInput = (date) => {
 
     if (!date) return ""
@@ -94,12 +93,10 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
       const payload = {
         amount: Number(amount),
-        categoryId: categoryId,
+        categoryId,
         date,
-        note: note
+        note
       }
-
-      console.log("Payload:", payload)
 
       if (transaction) {
 
@@ -127,27 +124,6 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
-      {/* NOTE */}
-
-      <input
-        type="text"
-        placeholder="Ghi chú"
-        className="border rounded-lg px-3 py-2 w-full"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
-
-      {/* AMOUNT */}
-
-      <input
-        type="number"
-        placeholder="Số tiền"
-        className="border rounded-lg px-3 py-2 w-full"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        required
-      />
 
       {/* TYPE */}
 
@@ -214,6 +190,17 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
       </div>
 
+      {/* AMOUNT */}
+
+      <input
+        type="number"
+        placeholder="Số tiền"
+        className="border rounded-lg px-3 py-2 w-full"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        required
+      />
+
       {/* DATE */}
 
       <input
@@ -222,6 +209,16 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
         value={date}
         onChange={(e) => setDate(e.target.value)}
         required
+      />
+
+      {/* NOTE */}
+
+      <input
+        type="text"
+        placeholder="Ghi chú"
+        className="border rounded-lg px-3 py-2 w-full"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
       />
 
       {/* SUBMIT */}

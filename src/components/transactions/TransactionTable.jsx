@@ -1,8 +1,12 @@
+import { useState } from "react"
 import { Trash2, Pencil } from "lucide-react"
 import toast from "react-hot-toast"
 import transactionAPI from "../../api/transaction.api"
+import ConfirmModal from "../common/ConfirmModal"
 
 function TransactionTable({ transactions, setTransactions, onEdit }) {
+
+  const [deleteId, setDeleteId] = useState(null)
 
   const formatMoney = (value, type) => {
 
@@ -24,16 +28,18 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
     return parsedDate.toLocaleDateString("vi-VN")
   }
 
-  const handleDelete = async (id) => {
+  const confirmDelete = (id) => {
+    setDeleteId(id)
+  }
 
-    if (!window.confirm("Bạn có chắc muốn xóa giao dịch này?")) return
+  const handleDelete = async () => {
 
     try {
 
-      await transactionAPI.delete(id)
+      await transactionAPI.delete(deleteId)
 
-      setTransactions((prev) =>
-        prev.filter((t) => t._id !== id)
+      setTransactions(prev =>
+        prev.filter(t => t._id !== deleteId)
       )
 
       toast.success("Đã xóa giao dịch")
@@ -44,6 +50,8 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
       toast.error("Xóa giao dịch thất bại")
 
     }
+
+    setDeleteId(null)
 
   }
 
@@ -59,7 +67,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
         <div className="text-center py-12 text-gray-500">
 
           <p className="text-lg">
-            📭 Chưa có giao dịch
+            Chưa có giao dịch
           </p>
 
           <p className="text-sm mt-2">
@@ -93,7 +101,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                 </th>
 
                 <th className="text-left py-3 px-10">
-                  Tháng/Ngày/Năm
+                  Ngày/Tháng/Năm
                 </th>
 
                 <th className="text-left py-3 px-6">
@@ -117,13 +125,9 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                   className="hover:bg-gray-50 transition"
                 >
 
-                  {/* CATEGORY */}
-
-                  <td className="py-4 px-6 text-gray-800 font-medium">
+                  <td className="py-4 px-6 font-medium text-gray-800">
                     {t.categoryId?.name || "N/A"}
                   </td>
-
-                  {/* TYPE */}
 
                   <td
                     className={`py-4 px-6 font-medium ${
@@ -137,8 +141,6 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                       : "Expense"}
                   </td>
 
-                  {/* AMOUNT */}
-
                   <td
                     className={`py-4 px-10 text-right font-semibold ${
                       t.categoryId?.type === "income"
@@ -149,19 +151,13 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                     {formatMoney(t.amount, t.categoryId?.type)}
                   </td>
 
-                  {/* DATE */}
-
                   <td className="py-4 px-10 text-gray-600">
                     {formatDate(t.date)}
                   </td>
 
-                  {/* NOTE */}
-
                   <td className="py-4 px-6">
                     {t.note || "-"}
                   </td>
-
-                  {/* ACTION */}
 
                   <td className="py-4 px-6">
 
@@ -175,7 +171,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                       </button>
 
                       <button
-                        onClick={() => handleDelete(t._id)}
+                        onClick={() => confirmDelete(t._id)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <Trash2 size={18} />
@@ -196,6 +192,14 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
         </div>
 
       )}
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Xóa giao dịch"
+        message="Bạn có chắc muốn xóa giao dịch này?"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
 
     </div>
   )
