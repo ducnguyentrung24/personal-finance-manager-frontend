@@ -1,14 +1,30 @@
-function Header() {
-  return (
-    <header className="bg-white shadow px-6 py-4 flex justify-between">
+import { useNavigate } from "react-router-dom"
 
-      <h1 className="font-semibold text-lg">
+function Header() {
+
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("token")
+
+    navigate("/login")
+
+  }
+
+  return (
+    <header className="bg-white border-b px-6 py-4 flex justify-between items-center">
+
+      <h1 className="font-semibold">
         Personal Finance Manager
       </h1>
 
-      <div>
-        User
-      </div>
+      <button
+        onClick={handleLogout}
+        className="text-red-500 hover:text-red-700"
+      >
+        Logout
+      </button>
 
     </header>
   )
