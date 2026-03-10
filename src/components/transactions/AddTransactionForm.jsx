@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
+
 import categoryAPI from "../../api/category.api"
+import transactionAPI from "../../api/transaction.api"
 
 function AddTransactionForm({ onClose }) {
 
@@ -16,18 +18,20 @@ function AddTransactionForm({ onClose }) {
 
   const [categories, setCategories] = useState([])
 
-  // Load categories from API
+  // Load categories from backend
   useEffect(() => {
+
     const fetchCategories = async () => {
       try {
         const res = await categoryAPI.getAll()
         setCategories(res.data)
       } catch (error) {
-        console.error("Failed to fetch categories:", error)
+        console.error("Fetch categories error:", error)
       }
     }
 
     fetchCategories()
+
   }, [])
 
   const handleChange = (e) => {
@@ -37,12 +41,27 @@ function AddTransactionForm({ onClose }) {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    console.log("Transaction:", form)
+    try {
 
-    onClose()
+      await transactionAPI.create({
+        title: form.title,
+        amount: Number(form.amount),
+        type: form.type,
+        category: form.category,
+        date: form.date
+      })
+
+      onClose()
+
+      // reload table
+      window.location.reload()
+
+    } catch (error) {
+      console.error("Create transaction error:", error)
+    }
   }
 
   return (
@@ -128,7 +147,7 @@ function AddTransactionForm({ onClose }) {
         onChange={handleChange}
       />
 
-      {/* SUBMIT BUTTON */}
+      {/* BUTTON */}
 
       <button
         type="submit"
