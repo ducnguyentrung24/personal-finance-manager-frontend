@@ -5,7 +5,7 @@ import transactionAPI from "../../api/transaction.api"
 function TransactionTable({ transactions, setTransactions }) {
 
   const formatMoney = (value) => {
-    return value.toLocaleString("vi-VN") + " ₫"
+    return Number(value).toLocaleString("vi-VN") + " ₫"
   }
 
   const formatDate = (date) => {
@@ -14,18 +14,22 @@ function TransactionTable({ transactions, setTransactions }) {
 
   const handleDelete = async (id) => {
 
-    if (!confirm("Bạn có chắc muốn xóa giao dịch này?")) return
+    if (!window.confirm("Bạn có chắc muốn xóa giao dịch này?")) return
 
     try {
 
       await transactionAPI.delete(id)
 
-      setTransactions(transactions.filter(t => t._id !== id))
+      // dùng callback để tránh state cũ
+      setTransactions((prev) =>
+        prev.filter((t) => t._id !== id)
+      )
 
       toast.success("Đã xóa giao dịch")
 
     } catch (error) {
 
+      console.error(error)
       toast.error("Xóa giao dịch thất bại")
 
     }

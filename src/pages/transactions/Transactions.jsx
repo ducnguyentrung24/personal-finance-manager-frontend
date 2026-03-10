@@ -12,6 +12,7 @@ function Transactions() {
   const [transactions, setTransactions] = useState([])
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("all")
+  const [editingTransaction, setEditingTransaction] = useState(null)
 
   const fetchTransactions = async () => {
 
@@ -19,7 +20,6 @@ function Transactions() {
 
       const res = await transactionAPI.getAll()
 
-      // xử lý mọi dạng response
       const data =
         Array.isArray(res)
           ? res
@@ -58,8 +58,6 @@ function Transactions() {
   return (
     <div className="space-y-6">
 
-      {/* HEADER */}
-
       <div className="flex justify-between items-center">
 
         <h1 className="text-2xl font-bold">
@@ -67,15 +65,16 @@ function Transactions() {
         </h1>
 
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setEditingTransaction(null)
+            setOpen(true)
+          }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
           Thêm giao dịch
         </button>
 
       </div>
-
-      {/* SEARCH */}
 
       <input
         type="text"
@@ -84,8 +83,6 @@ function Transactions() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-
-      {/* FILTER */}
 
       <div className="flex gap-2">
 
@@ -124,21 +121,26 @@ function Transactions() {
 
       </div>
 
-      {/* TABLE */}
-
       <TransactionTable
         transactions={filteredTransactions}
         setTransactions={setTransactions}
+        onEdit={(t) => {
+          setEditingTransaction(t)
+          setOpen(true)
+        }}
       />
-
-      {/* MODAL */}
 
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="Thêm giao dịch"
+        title={
+          editingTransaction
+            ? "Chỉnh sửa giao dịch"
+            : "Thêm giao dịch"
+        }
       >
         <AddTransactionForm
+          transaction={editingTransaction}
           onClose={() => setOpen(false)}
           refreshTransactions={fetchTransactions}
         />
