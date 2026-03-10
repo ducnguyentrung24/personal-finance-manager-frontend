@@ -29,12 +29,13 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
 
       setNote(transaction.note)
       setAmount(transaction.amount)
+      setType(transaction.categoryId?.type || "")
       setCategoryId(transaction.categoryId?._id || "")
       setDate(formatDateForInput(transaction.date))
 
     }
 
-  }, [])
+  }, [transaction])
 
   const fetchCategories = async () => {
 
@@ -72,23 +73,16 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
     setCategoryId("")
   }
 
-  // YYYY-MM-DD → YYYY/DD/MM
-  const formatDateForAPI = (date) => {
-
-    const [year, month, day] = date.split("-")
-
-    return `${year}/${day}/${month}`
-
-  }
-
-  // YYYY/DD/MM → YYYY-MM-DD
+  // ISO/Date-like string -> YYYY-MM-DD
   const formatDateForInput = (date) => {
 
     if (!date) return ""
 
-    const [year, day, month] = date.split("/")
+    const parsedDate = new Date(date)
 
-    return `${year}-${month}-${day}`
+    if (Number.isNaN(parsedDate.getTime())) return ""
+
+    return parsedDate.toISOString().split("T")[0]
 
   }
 
@@ -101,7 +95,7 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
       const payload = {
         amount: Number(amount),
         categoryId: categoryId,
-        date: formatDateForAPI(date),
+        date,
         note: note
       }
 

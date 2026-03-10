@@ -4,17 +4,24 @@ import transactionAPI from "../../api/transaction.api"
 
 function TransactionTable({ transactions, setTransactions }) {
 
-  const formatMoney = (value) => {
-    return Number(value).toLocaleString("vi-VN") + " ₫"
+  const formatMoney = (value, type) => {
+
+    const money = Number(value).toLocaleString("vi-VN") + " ₫"
+
+    return type === "income"
+      ? `+ ${money}`
+      : `- ${money}`
   }
 
   const formatDate = (date) => {
 
     if (!date) return ""
 
-    const [year, day, month] = date.split("/")
+    const parsedDate = new Date(date)
 
-    return `${day}/${month}/${year}`
+    if (Number.isNaN(parsedDate.getTime())) return ""
+
+    return parsedDate.toLocaleDateString("vi-VN")
   }
 
   const handleDelete = async (id) => {
@@ -69,9 +76,9 @@ function TransactionTable({ transactions, setTransactions }) {
 
           <thead className="border-b bg-gray-50">
             <tr>
-              <th className="py-3">Tiêu đề</th>
+              <th className="py-3">Ghi chú</th>
               <th>Danh mục</th>
-              <th>Số tiền</th>
+              <th className="text-right">Số tiền</th>
               <th>Ngày</th>
               <th>Hành động</th>
             </tr>
@@ -84,21 +91,21 @@ function TransactionTable({ transactions, setTransactions }) {
               <tr key={t._id} className="border-b hover:bg-gray-50">
 
                 <td className="py-3 font-medium">
-                  {t.title}
+                  {t.note || "-"}
                 </td>
 
                 <td>
-                  {t.category?.name || "N/A"}
+                  {t.categoryId?.name || "N/A"}
                 </td>
 
                 <td
-                  className={
-                    t.type === "income"
-                      ? "text-green-600 font-semibold"
-                      : "text-red-600 font-semibold"
-                  }
+                  className={`text-right font-semibold ${
+                    t.categoryId?.type === "income"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
                 >
-                  {formatMoney(t.amount)}
+                  {formatMoney(t.amount, t.categoryId?.type)}
                 </td>
 
                 <td>
