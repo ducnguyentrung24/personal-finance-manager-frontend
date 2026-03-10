@@ -19,6 +19,7 @@ function AuthProvider({ children }) {
     } catch (error) {
 
       console.error("Fetch user error:", error)
+      setUser(null)
 
     }
 
@@ -30,6 +31,8 @@ function AuthProvider({ children }) {
 
     if (token) {
       fetchUser()
+    } else {
+      setUser(null)
     }
 
   }, [])
@@ -38,7 +41,8 @@ function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
-        setUser
+        setUser,
+        fetchUser
       }}
     >
       {children}

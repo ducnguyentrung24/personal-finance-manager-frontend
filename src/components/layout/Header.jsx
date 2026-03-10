@@ -4,7 +4,7 @@ import { AuthContext } from "../../context/AuthContext"
 
 function Header() {
 
-  const { user } = useContext(AuthContext)
+  const { user, setUser } = useContext(AuthContext)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -13,6 +13,8 @@ function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    setUser(null)
     navigate("/login")
   }
 
@@ -42,12 +44,10 @@ function Header() {
   return (
     <header className="h-full bg-white flex items-center justify-between px-6">
 
-      {/* PAGE TITLE */}
       <h1 className="text-lg font-semibold text-gray-800">
         {getTitle()}
       </h1>
 
-      {/* USER AREA */}
       <div className="relative pr-2" ref={menuRef}>
 
         <button
@@ -65,7 +65,6 @@ function Header() {
 
         </button>
 
-        {/* DROPDOWN */}
         {open && (
 
           <div className="absolute right-0 mt-2 min-w-[150px] bg-white border rounded-lg shadow-md">

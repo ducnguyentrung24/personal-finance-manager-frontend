@@ -1,23 +1,17 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
 
 import authAPI from "../../api/auth.api"
+import { AuthContext } from "../../context/AuthContext"
 
 function Login() {
 
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
   const navigate = useNavigate()
-
-  const [form, setForm] = useState({
-    email: "",
-    password: ""
-  })
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
-  }
+  const { fetchUser } = useContext(AuthContext)
 
   const handleSubmit = async (e) => {
 
@@ -25,50 +19,58 @@ function Login() {
 
     try {
 
-      const res = await authAPI.login(form)
+      const res = await authAPI.login({
+        email,
+        password
+      })
 
-      const token = res.data.token
+      const { token } = res.data
 
       localStorage.setItem("token", token)
+      await fetchUser()
+
+      toast.success("Đăng nhập thành công")
 
       navigate("/")
 
     } catch (error) {
 
-      console.error("Login error:", error)
+      console.error(error)
+      toast.error("Email hoặc mật khẩu không đúng")
 
     }
 
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow w-96 space-y-4"
+        className="bg-white p-8 rounded-xl shadow w-96"
       >
 
-        <h2 className="text-xl font-bold text-center">
+        <h2 className="text-2xl font-bold mb-6 text-center">
           Login
         </h2>
 
         <input
           type="email"
-          name="email"
           placeholder="Email"
-          className="w-full border rounded-lg px-3 py-2"
-          value={form.email}
-          onChange={handleChange}
+          className="border rounded-lg px-3 py-2 w-full mb-4"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
           type="password"
-          name="password"
           placeholder="Password"
-          className="w-full border rounded-lg px-3 py-2"
-          value={form.password}
-          onChange={handleChange}
+          className="border rounded-lg px-3 py-2 w-full mb-4"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button
@@ -81,6 +83,7 @@ function Login() {
       </form>
 
     </div>
+
   )
 }
 
