@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react"
 import transactionAPI from "../../api/transaction.api"
 import categoryAPI from "../../api/category.api"
 
-function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
+function AddTransactionForm({ transaction, onClose, refreshTransactions, onSaved }) {
 
   const [note, setNote] = useState("")
   const [amount, setAmount] = useState("")
@@ -98,19 +98,27 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions }) {
         note
       }
 
+      let savedTransaction = null
+
       if (transaction) {
 
-        await transactionAPI.update(transaction._id, payload)
+        const res = await transactionAPI.update(transaction._id, payload)
+        savedTransaction = res?.data || res
         toast.success("Cập nhật giao dịch thành công")
 
       } else {
 
-        await transactionAPI.create(payload)
+        const res = await transactionAPI.create(payload)
+        savedTransaction = res?.data || res
         toast.success("Thêm giao dịch thành công")
 
       }
 
-      refreshTransactions()
+      if (onSaved) {
+        onSaved(savedTransaction)
+      } else {
+        refreshTransactions()
+      }
       onClose()
 
     } catch (error) {

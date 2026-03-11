@@ -23,7 +23,8 @@ function Categories() {
 
   const [deletingCategory, setDeletingCategory] = useState(null)
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (options = {}) => {
+    const { showLoading = true } = options
 
     try {
 
@@ -99,18 +100,33 @@ function Categories() {
 
     try {
 
+      let savedCategory = null
+
       if (editingCategory?._id) {
-        await categoryAPI.update(editingCategory._id, form)
+        const res = await categoryAPI.update(editingCategory._id, form)
+        savedCategory = res?.data || res
         toast.success("Cập nhật danh mục thành công")
       } else {
-        await categoryAPI.create(form)
+        const res = await categoryAPI.create(form)
+        savedCategory = res?.data || res
         toast.success("Thêm danh mục thành công")
+      }
+
+      if (savedCategory?._id) {
+        setCategories((prev) => {
+          const exists = prev.some((c) => c._id === savedCategory._id)
+          if (exists) {
+            return prev.map((c) => (c._id === savedCategory._id ? savedCategory : c))
+          }
+          return [savedCategory, ...prev]
+        })
+      } else {
+        fetchCategories({ showLoading: false })
       }
 
       setIsModalOpen(false)
       setEditingCategory(null)
       setForm(EMPTY_FORM)
-      fetchCategories()
 
     } catch (error) {
 
@@ -130,7 +146,7 @@ function Categories() {
       await categoryAPI.delete(deletingCategory._id)
       toast.success("Xóa danh mục thành công")
       setDeletingCategory(null)
-      fetchCategories()
+      setCategories((prev) => prev.filter((c) => c._id !== deletingCategory._id))
 
     } catch (error) {
 

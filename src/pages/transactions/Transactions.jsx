@@ -48,6 +48,23 @@ function Transactions() {
 
   }, [])
 
+  const handleTransactionSaved = (savedTransaction) => {
+
+    if (!savedTransaction?._id) {
+      fetchTransactions()
+      return
+    }
+
+    setTransactions((prev) => {
+      const exists = prev.some((t) => t._id === savedTransaction._id)
+      if (exists) {
+        return prev.map((t) => (t._id === savedTransaction._id ? savedTransaction : t))
+      }
+      return [savedTransaction, ...prev]
+    })
+
+  }
+
   const filteredTransactions = (transactions || [])
     .filter((t) =>
       (t.note || "").toLowerCase().includes(search.toLowerCase())
@@ -145,6 +162,7 @@ function Transactions() {
           transaction={editingTransaction}
           onClose={() => setOpen(false)}
           refreshTransactions={fetchTransactions}
+          onSaved={handleTransactionSaved}
         />
       </Modal>
 
