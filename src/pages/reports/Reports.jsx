@@ -158,14 +158,14 @@ function Reports() {
   return (
     <div className="space-y-6">
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
 
         <h1 className="text-2xl font-bold">Reports</h1>
 
         <button
           onClick={handleExportExcel}
           disabled={exporting}
-          className="px-4 py-2 rounded-lg bg-green-600 text-white disabled:opacity-60"
+          className="px-4 py-2 rounded-lg bg-green-600 text-white disabled:opacity-60 w-full sm:w-auto"
         >
           {exporting ? "Đang xuất..." : "Xuất Excel"}
         </button>
@@ -200,7 +200,7 @@ function Reports() {
 
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow">
 
         <h2 className="font-semibold mb-4">Phân tích theo tháng</h2>
 
@@ -259,7 +259,7 @@ function Reports() {
 
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow">
 
         <h2 className="font-semibold mb-4">Top danh mục chi tiêu</h2>
 

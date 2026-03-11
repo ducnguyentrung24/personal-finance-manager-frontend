@@ -56,7 +56,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border">
+    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border">
 
       <h2 className="font-semibold text-lg mb-4">
         Giao dịch
@@ -82,7 +82,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
 
         <div className="overflow-x-auto">
 
-          <table className="w-full">
+          <table className="w-full min-w-[720px]">
 
             <thead className="bg-gray-50 border-b text-sm text-gray-600">
 
@@ -142,7 +142,7 @@ function TransactionTable({ transactions, setTransactions, onEdit }) {
                   </td>
 
                   <td
-                    className={`py-4 px-10 text-right font-semibold ${
+                    className={`py-4 px-10 text-right font-semibold whitespace-nowrap ${
                       t.categoryId?.type === "income"
                         ? "text-green-600"
                         : "text-red-600"

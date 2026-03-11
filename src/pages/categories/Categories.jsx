@@ -186,7 +186,7 @@ function Categories() {
   return (
     <div className="space-y-6">
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
 
         <h1 className="text-2xl font-bold">
           Categories
@@ -194,7 +194,7 @@ function Categories() {
 
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
+          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto justify-center"
         >
           <Plus size={18} />
           Thêm danh mục
@@ -202,7 +202,7 @@ function Categories() {
 
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         <div className="bg-white p-4 rounded-xl shadow">
           <p className="text-sm text-gray-500">Danh mục thu nhập</p>
@@ -216,17 +216,17 @@ function Categories() {
 
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
 
         <input
           type="text"
           placeholder="Tìm danh mục..."
-          className="border rounded-lg px-3 py-2 w-96 bg-white"
+          className="border rounded-lg px-3 py-2 w-full sm:w-96 bg-white"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
 
           {[
             { key: "all", label: "Tất cả" },

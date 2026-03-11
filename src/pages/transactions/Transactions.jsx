@@ -85,11 +85,16 @@ function Transactions() {
       if (filter === "all") return true
       return t.categoryId?.type === filter
     })
+    .sort((a, b) => {
+      const dateA = new Date(a.date || a.createdAt || 0).getTime()
+      const dateB = new Date(b.date || b.createdAt || 0).getTime()
+      return dateB - dateA
+    })
 
   return (
     <div className="space-y-6">
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
 
         <h1 className="text-2xl font-bold">
           Transactions
@@ -100,7 +105,7 @@ function Transactions() {
             setEditingTransaction(null)
             setOpen(true)
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
         >
           Thêm giao dịch
         </button>
@@ -110,12 +115,12 @@ function Transactions() {
       <input
         type="text"
         placeholder="Tìm giao dịch..."
-        className="border rounded-lg px-3 py-2 w-96"
+        className="border rounded-lg px-3 py-2 w-full sm:w-96"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
 
         <button
           onClick={() => setFilter("all")}

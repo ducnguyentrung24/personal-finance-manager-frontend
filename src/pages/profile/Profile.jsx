@@ -120,7 +120,7 @@ function Profile() {
       <div className="bg-white rounded-xl shadow">
 
         {/* HEADER */}
-        <div className="flex items-center gap-6 p-6 border-b">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-4 sm:p-6 border-b">
 
           <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
             {user.name?.charAt(0).toUpperCase()}
@@ -139,7 +139,7 @@ function Profile() {
         </div>
 
         {/* INFO */}
-        <div className="p-6 grid grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
           <div>
             <p className="text-sm text-gray-500">
@@ -184,7 +184,7 @@ function Profile() {
         </div>
 
         {/* ACTIONS */}
-        <div className="border-t p-6 flex gap-4">
+        <div className="border-t p-4 sm:p-6 flex flex-wrap gap-3">
 
           <button
             onClick={() => setIsChangePasswordOpen(true)}

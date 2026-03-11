@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react"
+import { useContext, useMemo, useState, useRef, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { AuthContext } from "../../context/AuthContext"
 
@@ -18,13 +18,6 @@ function Header() {
     navigate("/login")
   }
 
-  const getTitle = () => {
-    if (location.pathname === "/") return "Dashboard"
-
-    const path = location.pathname.replace("/", "")
-    return path.charAt(0).toUpperCase() + path.slice(1)
-  }
-
   useEffect(() => {
 
     const handleClickOutside = (e) => {
@@ -41,27 +34,38 @@ function Header() {
 
   }, [])
 
+  const resolvedUser = useMemo(() => {
+    if (user) return user
+
+    const cached = localStorage.getItem("user")
+    if (!cached) return null
+
+    try {
+      return JSON.parse(cached)
+    } catch {
+      return null
+    }
+  }, [user])
+
   return (
-    <header className="h-full bg-white flex items-center justify-between px-6 relative z-50">
+    <header className="h-full bg-white flex items-center justify-end px-3 sm:px-6 gap-3 relative z-50">
 
-      <h1 className="text-lg font-semibold text-gray-800">
-        {getTitle()}
-      </h1>
-
-      <div className="relative pr-2 z-[60]" ref={menuRef}>
+      <div className="relative pr-2 z-[60] shrink-0" ref={menuRef}>
 
         <button
           onClick={() => setOpen(!open)}
-          className="flex flex-col items-center justify-center h-12"
+          className="flex flex-col items-end justify-center h-12 text-right"
         >
 
-          <span className="font-medium text-gray-800">
-            {user?.name}
+          <span className="font-medium text-gray-800 text-sm sm:text-base">
+            {resolvedUser?.name || "Tài khoản"}
           </span>
 
-          <span className="text-sm text-gray-500">
-            {user?.email}
-          </span>
+          {resolvedUser?.email && (
+            <span className="text-xs sm:text-sm text-gray-500">
+              {resolvedUser.email}
+            </span>
+          )}
 
         </button>
 
