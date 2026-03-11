@@ -14,11 +14,14 @@ function Users() {
 
   const [deletingUser, setDeletingUser] = useState(null)
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (options = {}) => {
+    const { showLoading = true } = options
 
     try {
 
-      setLoading(true)
+      if (showLoading) {
+        setLoading(true)
+      }
 
       const res = await userAPI.getAll()
       const data = res?.data || res
@@ -33,7 +36,9 @@ function Users() {
 
     } finally {
 
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
 
     }
 
@@ -91,7 +96,7 @@ function Users() {
       toast.success("Xóa user thành công")
       setDeletingUser(null)
       setSelectedIds((prev) => prev.filter((id) => id !== deletingUser._id))
-      fetchUsers()
+      setUsers((prev) => prev.filter((user) => user._id !== deletingUser._id))
 
     } catch (error) {
 
@@ -110,8 +115,8 @@ function Users() {
 
       await userAPI.deleteMany(selectedIds)
       toast.success("Xóa các user đã chọn thành công")
+      setUsers((prev) => prev.filter((user) => !selectedIds.includes(user._id)))
       setSelectedIds([])
-      fetchUsers()
 
     } catch (error) {
 
@@ -126,15 +131,25 @@ function Users() {
 
     try {
 
+      const updated = user.isActive
+        ? await userAPI.lock(user._id)
+        : await userAPI.unlock(user._id)
+
+      const updatedUser = updated?.data || updated
+
       if (user.isActive) {
-        await userAPI.lock(user._id)
         toast.success("Đã khóa user")
       } else {
-        await userAPI.unlock(user._id)
         toast.success("Đã mở khóa user")
       }
 
-      fetchUsers()
+      if (updatedUser?._id) {
+        setUsers((prev) =>
+          prev.map((item) => (item._id === updatedUser._id ? updatedUser : item))
+        )
+      } else {
+        fetchUsers({ showLoading: false })
+      }
 
     } catch (error) {
 
