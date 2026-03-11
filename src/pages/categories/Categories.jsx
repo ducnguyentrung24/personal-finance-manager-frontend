@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 import categoryAPI from "../../api/category.api"
 import Modal from "../../components/common/Modal"
 import ConfirmModal from "../../components/common/ConfirmModal"
+import { getCache, setCache } from "../../utils/pageCache"
 
 const EMPTY_FORM = {
   name: "",
@@ -28,6 +29,12 @@ function Categories() {
 
     try {
 
+      const cached = getCache("categories-list")
+      if (cached) {
+        setCategories(cached)
+        return
+      }
+
       const res = await categoryAPI.getAll()
 
       const data =
@@ -40,6 +47,7 @@ function Categories() {
           : []
 
       setCategories(data)
+      setCache("categories-list", data, 5 * 60 * 1000)
 
     } catch (error) {
 
@@ -75,9 +83,22 @@ function Categories() {
     const incomeCount = categories.filter((c) => c.type === "income").length
     const expenseCount = categories.filter((c) => c.type === "expense").length
 
-    return { incomeCount, expenseCount }
+    return {
+      incomeCount,
+      expenseCount
+    }
 
   }, [categories])
+
+  const incomeCategories = useMemo(() => {
+    if (filter !== "all") return []
+    return filteredCategories.filter((c) => c.type === "income")
+  }, [filteredCategories, filter])
+
+  const expenseCategories = useMemo(() => {
+    if (filter !== "all") return []
+    return filteredCategories.filter((c) => c.type === "expense")
+  }, [filteredCategories, filter])
 
   const openCreateModal = () => {
     setEditingCategory(null)
@@ -115,10 +136,11 @@ function Categories() {
       if (savedCategory?._id) {
         setCategories((prev) => {
           const exists = prev.some((c) => c._id === savedCategory._id)
-          if (exists) {
-            return prev.map((c) => (c._id === savedCategory._id ? savedCategory : c))
-          }
-          return [savedCategory, ...prev]
+          const next = exists
+            ? prev.map((c) => (c._id === savedCategory._id ? savedCategory : c))
+            : [savedCategory, ...prev]
+          setCache("categories-list", next, 5 * 60 * 1000)
+          return next
         })
       } else {
         fetchCategories({ showLoading: false })
@@ -146,7 +168,11 @@ function Categories() {
       await categoryAPI.delete(deletingCategory._id)
       toast.success("Xóa danh mục thành công")
       setDeletingCategory(null)
-      setCategories((prev) => prev.filter((c) => c._id !== deletingCategory._id))
+      setCategories((prev) => {
+        const next = prev.filter((c) => c._id !== deletingCategory._id)
+        setCache("categories-list", next, 5 * 60 * 1000)
+        return next
+      })
 
     } catch (error) {
 
@@ -203,9 +229,9 @@ function Categories() {
         <div className="flex gap-2">
 
           {[
-            { key: "all", label: "All" },
-            { key: "income", label: "Income" },
-            { key: "expense", label: "Expense" }
+            { key: "all", label: "Tất cả" },
+            { key: "income", label: "Thu nhập" },
+            { key: "expense", label: "Chi tiêu" }
           ].map((item) => (
             <button
               key={item.key}
@@ -224,7 +250,95 @@ function Categories() {
 
       </div>
 
-      {filteredCategories.length === 0 ? (
+      {filter === "all" ? (
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <div>
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">Thu nhập</h2>
+
+            {incomeCategories.length === 0 ? (
+              <div className="bg-white rounded-xl shadow p-6 text-center text-gray-500">
+                Chưa có danh mục thu nhập
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {incomeCategories.map((category) => (
+                  <div key={category._id} className="bg-white rounded-xl shadow p-4 border border-gray-100">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{category.name}</h3>
+                        <span className="inline-block mt-2 text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                          {category.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditModal(category)}
+                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                          title="Sửa"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => setDeletingCategory(category)}
+                          className="p-2 rounded-lg hover:bg-red-50 text-red-600"
+                          title="Xóa"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">Chi tiêu</h2>
+
+            {expenseCategories.length === 0 ? (
+              <div className="bg-white rounded-xl shadow p-6 text-center text-gray-500">
+                Chưa có danh mục chi tiêu
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {expenseCategories.map((category) => (
+                  <div key={category._id} className="bg-white rounded-xl shadow p-4 border border-gray-100">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-gray-800">{category.name}</h3>
+                        <span className="inline-block mt-2 text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">
+                          {category.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditModal(category)}
+                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                          title="Sửa"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => setDeletingCategory(category)}
+                          className="p-2 rounded-lg hover:bg-red-50 text-red-600"
+                          title="Xóa"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+      ) : filteredCategories.length === 0 ? (
 
         <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
           <p className="text-lg">📂 Chưa có danh mục phù hợp</p>
@@ -307,8 +421,8 @@ function Categories() {
             onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
             required
           >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
+            <option value="expense">Chi tiêu</option>
+            <option value="income">Thu nhập</option>
           </select>
 
           <div className="flex justify-end gap-2">

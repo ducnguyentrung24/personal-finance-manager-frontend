@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 
 import StatCard from "../../components/common/StatCard"
 import reportAPI from "../../api/report.api"
+import { getCache, setCache } from "../../utils/pageCache"
 
 function Reports() {
 
@@ -24,6 +25,15 @@ function Reports() {
 
     const fetchReports = async () => {
 
+      const cached = getCache("reports-summary")
+      if (cached) {
+        setDashboard(cached.dashboard)
+        setMonthly(cached.monthly)
+        setTopExpenseCategories(cached.topExpenseCategories)
+        setLoading(false)
+        return
+      }
+
       try {
 
         const [dashboardRes, monthlyRes] = await Promise.all([
@@ -34,17 +44,34 @@ function Reports() {
         const dashboardData = dashboardRes?.data?.data || dashboardRes?.data || {}
         const monthlyData = monthlyRes?.data?.data || monthlyRes?.data || []
 
-        setDashboard({
+        const nextDashboard = {
           totalIncome: Number(dashboardData.totalIncome || 0),
           totalExpense: Number(dashboardData.totalExpense || 0),
           balance: Number(dashboardData.balance || 0)
-        })
+        }
 
-        setMonthly(Array.isArray(monthlyData) ? monthlyData : [])
+        const nextMonthly = Array.isArray(monthlyData) ? monthlyData : []
 
         const topRes = await reportAPI.getTopExpenseCategories()
         const topData = topRes?.data?.data || topRes?.data || []
-        setTopExpenseCategories(Array.isArray(topData) ? topData : [])
+        const nextTopExpenseCategories = Array.isArray(topData) ? topData : []
+
+        setDashboard(nextDashboard)
+        setMonthly(nextMonthly)
+        setTopExpenseCategories(nextTopExpenseCategories)
+        setCache("reports-summary", {
+          dashboard: nextDashboard,
+          monthly: nextMonthly,
+          topExpenseCategories: nextTopExpenseCategories
+        }, 5 * 60 * 1000)
+
+        const dashboardCached = getCache("dashboard-data")
+        if (dashboardCached) {
+          setCache("dashboard-data", {
+            ...dashboardCached,
+            monthly: nextMonthly
+          }, 5 * 60 * 1000)
+        }
 
       } catch (error) {
 

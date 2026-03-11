@@ -5,6 +5,7 @@ import Modal from "../../components/common/Modal"
 import AddTransactionForm from "../../components/transactions/AddTransactionForm"
 
 import transactionAPI from "../../api/transaction.api"
+import { getCache, setCache } from "../../utils/pageCache"
 
 function Transactions() {
 
@@ -17,6 +18,12 @@ function Transactions() {
   const fetchTransactions = async () => {
 
     try {
+
+      const cached = getCache("transactions-list")
+      if (cached) {
+        setTransactions(cached)
+        return
+      }
 
       const res = await transactionAPI.getAll()
 
@@ -32,6 +39,7 @@ function Transactions() {
           : []
 
       setTransactions(data)
+      setCache("transactions-list", data, 5 * 60 * 1000)
 
     } catch (error) {
 
@@ -58,9 +66,13 @@ function Transactions() {
     setTransactions((prev) => {
       const exists = prev.some((t) => t._id === savedTransaction._id)
       if (exists) {
-        return prev.map((t) => (t._id === savedTransaction._id ? savedTransaction : t))
+        const next = prev.map((t) => (t._id === savedTransaction._id ? savedTransaction : t))
+        setCache("transactions-list", next, 5 * 60 * 1000)
+        return next
       }
-      return [savedTransaction, ...prev]
+      const next = [savedTransaction, ...prev]
+      setCache("transactions-list", next, 5 * 60 * 1000)
+      return next
     })
 
   }
@@ -113,7 +125,7 @@ function Transactions() {
               : "bg-gray-100"
           }`}
         >
-          All
+          Tất cả
         </button>
 
         <button
@@ -124,7 +136,7 @@ function Transactions() {
               : "bg-gray-100"
           }`}
         >
-          Income
+          Thu nhập
         </button>
 
         <button
@@ -135,7 +147,7 @@ function Transactions() {
               : "bg-gray-100"
           }`}
         >
-          Expense
+          Chi tiêu
         </button>
 
       </div>

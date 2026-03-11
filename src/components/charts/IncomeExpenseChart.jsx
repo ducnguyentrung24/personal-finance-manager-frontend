@@ -11,6 +11,7 @@ import {
 } from "recharts"
 
 import reportAPI from "../../api/report.api"
+import { getCache, setCache } from "../../utils/pageCache"
 
 function IncomeExpenseChart() {
 
@@ -23,6 +24,17 @@ function IncomeExpenseChart() {
   useEffect(() => {
 
     const fetchMonthly = async () => {
+
+      const cached = getCache("dashboard-data")
+      if (cached?.monthly) {
+        const formatted = cached.monthly.map((item) => ({
+          month: item.month,
+          income: Number(item.income || 0),
+          expense: Number(item.expense || 0)
+        }))
+        setData(formatted)
+        return
+      }
 
       try {
 

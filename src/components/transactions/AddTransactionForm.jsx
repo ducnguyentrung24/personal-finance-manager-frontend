@@ -115,7 +115,19 @@ function AddTransactionForm({ transaction, onClose, refreshTransactions, onSaved
       }
 
       if (onSaved) {
-        onSaved(savedTransaction)
+        const selectedCategory = categories.find((c) => c._id === categoryId)
+        const normalizedTransaction = savedTransaction && selectedCategory
+          ? {
+            ...savedTransaction,
+            categoryId: {
+              _id: selectedCategory._id,
+              name: selectedCategory.name,
+              type: selectedCategory.type
+            }
+          }
+          : savedTransaction
+
+        onSaved(normalizedTransaction)
       } else {
         refreshTransactions()
       }

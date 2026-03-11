@@ -14,8 +14,8 @@ function Sidebar() {
 
   const menu = [
     { name: "Dashboard", path: "/", icon: LayoutDashboard },
-    { name: "Transactions", path: "/transactions", icon: Wallet },
     { name: "Categories", path: "/categories", icon: Tags },
+    { name: "Transactions", path: "/transactions", icon: Wallet },
     { name: "Reports", path: "/reports", icon: BarChart3 },
     ...(user?.role === "admin"
       ? [{ name: "Users", path: "/users", icon: Users }]

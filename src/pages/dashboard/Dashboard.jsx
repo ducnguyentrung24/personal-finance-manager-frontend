@@ -4,6 +4,7 @@ import StatCard from "../../components/common/StatCard"
 import IncomeExpenseChart from "../../components/charts/IncomeExpenseChart"
 
 import reportAPI from "../../api/report.api"
+import { getCache, setCache } from "../../utils/pageCache"
 
 function Dashboard() {
 
@@ -21,6 +22,12 @@ function Dashboard() {
   useEffect(() => {
 
     const fetchDashboard = async () => {
+
+      const cached = getCache("dashboard-data")
+      if (cached) {
+        setStats(cached.stats)
+        return
+      }
 
       try {
 
@@ -46,12 +53,18 @@ function Dashboard() {
           ? Number(latestMonth.income || 0) - Number(latestMonth.expense || 0)
           : 0
 
-        setStats({
+        const nextStats = {
           totalBalance: balance,
           totalIncome,
           totalExpense,
           savings: monthlySavings
-        })
+        }
+
+        setStats(nextStats)
+        setCache("dashboard-data", {
+          stats: nextStats,
+          monthly: monthlyData
+        }, 5 * 60 * 1000)
 
       } catch (error) {
 

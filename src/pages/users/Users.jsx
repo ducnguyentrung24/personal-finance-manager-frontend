@@ -4,6 +4,8 @@ import { Lock, LockOpen, Trash2 } from "lucide-react"
 
 import userAPI from "../../api/user.api"
 import ConfirmModal from "../../components/common/ConfirmModal"
+import Modal from "../../components/common/Modal"
+import { getCache, setCache } from "../../utils/pageCache"
 
 function Users() {
 
@@ -13,6 +15,15 @@ function Users() {
   const [loading, setLoading] = useState(true)
 
   const [deletingUser, setDeletingUser] = useState(null)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
+    isActive: true
+  })
 
   const fetchUsers = async (options = {}) => {
     const { showLoading = true } = options
@@ -23,10 +34,18 @@ function Users() {
         setLoading(true)
       }
 
+      const cached = getCache("users-list")
+      if (cached) {
+        setUsers(cached)
+        return
+      }
+
       const res = await userAPI.getAll()
       const data = res?.data || res
 
-      setUsers(Array.isArray(data) ? data : [])
+      const nextUsers = Array.isArray(data) ? data : []
+      setUsers(nextUsers)
+      setCache("users-list", nextUsers, 5 * 60 * 1000)
 
     } catch (error) {
 
@@ -96,7 +115,11 @@ function Users() {
       toast.success("Xóa user thành công")
       setDeletingUser(null)
       setSelectedIds((prev) => prev.filter((id) => id !== deletingUser._id))
-      setUsers((prev) => prev.filter((user) => user._id !== deletingUser._id))
+      setUsers((prev) => {
+        const next = prev.filter((user) => user._id !== deletingUser._id)
+        setCache("users-list", next, 5 * 60 * 1000)
+        return next
+      })
 
     } catch (error) {
 
@@ -115,7 +138,11 @@ function Users() {
 
       await userAPI.deleteMany(selectedIds)
       toast.success("Xóa các user đã chọn thành công")
-      setUsers((prev) => prev.filter((user) => !selectedIds.includes(user._id)))
+      setUsers((prev) => {
+        const next = prev.filter((user) => !selectedIds.includes(user._id))
+        setCache("users-list", next, 5 * 60 * 1000)
+        return next
+      })
       setSelectedIds([])
 
     } catch (error) {
@@ -144,9 +171,11 @@ function Users() {
       }
 
       if (updatedUser?._id) {
-        setUsers((prev) =>
-          prev.map((item) => (item._id === updatedUser._id ? updatedUser : item))
-        )
+        setUsers((prev) => {
+          const next = prev.map((item) => (item._id === updatedUser._id ? updatedUser : item))
+          setCache("users-list", next, 5 * 60 * 1000)
+          return next
+        })
       } else {
         fetchUsers({ showLoading: false })
       }
@@ -160,20 +189,83 @@ function Users() {
 
   }
 
+  const resetForm = () => {
+    setForm({
+      name: "",
+      email: "",
+      password: "",
+      role: "user",
+      isActive: true
+    })
+  }
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault()
+
+    try {
+
+      setCreating(true)
+
+      const payload = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+        isActive: form.isActive
+      }
+
+      const res = await userAPI.create(payload)
+      const created = res?.data || res
+
+      if (created?._id) {
+        setUsers((prev) => {
+          const next = [created, ...prev]
+          setCache("users-list", next, 5 * 60 * 1000)
+          return next
+        })
+      } else {
+        fetchUsers({ showLoading: false })
+      }
+
+      toast.success("Thêm user thành công")
+      setIsCreateOpen(false)
+      resetForm()
+
+    } catch (error) {
+
+      console.error("Create user error:", error)
+      toast.error(error?.response?.data?.message || "Thêm user thất bại")
+
+    } finally {
+
+      setCreating(false)
+
+    }
+  }
+
   return (
     <div className="space-y-6">
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
 
         <h1 className="text-2xl font-bold">Users Management</h1>
 
-        <button
-          onClick={handleDeleteSelected}
-          disabled={selectedIds.length === 0}
-          className="px-4 py-2 rounded-lg bg-red-600 text-white disabled:opacity-50"
-        >
-          Xóa đã chọn ({selectedIds.length})
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+          >
+            Thêm user
+          </button>
+
+          <button
+            onClick={handleDeleteSelected}
+            disabled={selectedIds.length === 0}
+            className="px-4 py-2 rounded-lg bg-red-600 text-white disabled:opacity-50"
+          >
+            Xóa đã chọn ({selectedIds.length})
+          </button>
+        </div>
 
       </div>
 
@@ -282,6 +374,84 @@ function Users() {
         onCancel={() => setDeletingUser(null)}
         onConfirm={handleDeleteUser}
       />
+
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => {
+          setIsCreateOpen(false)
+          resetForm()
+        }}
+        title="Thêm user mới"
+      >
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Tên"
+            className="border rounded-lg px-3 py-2 w-full"
+            value={form.name}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            required
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="border rounded-lg px-3 py-2 w-full"
+            value={form.email}
+            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            className="border rounded-lg px-3 py-2 w-full"
+            value={form.password}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            required
+          />
+
+          <select
+            className="border rounded-lg px-3 py-2 w-full"
+            value={form.role}
+            onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <select
+            className="border rounded-lg px-3 py-2 w-full"
+            value={form.isActive ? "active" : "locked"}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, isActive: e.target.value === "active" }))
+            }
+          >
+            <option value="active">Active</option>
+            <option value="locked">Locked</option>
+          </select>
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCreateOpen(false)
+                resetForm()
+              }}
+              className="px-4 py-2 rounded-lg bg-gray-100"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={creating}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60"
+            >
+              {creating ? "Đang tạo..." : "Tạo user"}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
     </div>
   )
